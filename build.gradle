@@ -1,0 +1,17 @@
+defaultTasks 'push'
+
+project.group = 'hello'
+project.version = 'SNAPSHOT'
+
+ext {
+    env = System.getenv()
+}
+
+task build(type: Exec) {
+    workingDir '.'
+    commandLine 'docker', 'build', '-t', "${env.DOCKER _REPO}/${project.group}/${project.name}:${env.VERSION_NUMBER}-build.${env.BUILD_NUMBER}", '-f', 'docker/Dockerfile', '.'
+}
+
+task push(type: Exec, dependsOn: 'build') {
+    commandLine 'docker', 'push', "${env.DOCKER_REPO}/${project.group}/${project.name}:${env.VERSION_NUMBER}-build.${env.BUILD_NUMBER}"
+}
