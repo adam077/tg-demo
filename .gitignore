@@ -1,6 +1,5 @@
 .idea/
 bin/
 logs/
-etc/config.yaml
 .DS_Store
 *.log

@@ -1,0 +1,12 @@
+serviceport: 8080
+debug: true
+enablescheduler: false
+enablecors: true
+dbconfig:
+  host: 155.138.196.114
+  port: 5432
+  user: postgres
+  password: password
+  maxidleconns: 16
+  maxopenconns: 32
+  maxlifetimestr: 30m
