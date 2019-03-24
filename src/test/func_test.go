@@ -11,7 +11,7 @@ func TestRunner(t *testing.T) {
 
 func t1() {
 	dbMeta := data.GetDataDB("default")
-	//dbMeta.Exec("update tz_plan_effect_creative_order set status = 1;")
+	//dbMeta.Exec("select 1;")
 	asdf := []data.ModelInterface{
 		&data.TableTest{},
 	}

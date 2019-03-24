@@ -34,3 +34,16 @@ func KeyDiff(left, right map[string]interface{}) bool {
 	}
 	return true
 }
+
+var ShangHaiLocation, _ = time.LoadLocation("Asia/Shanghai")
+
+var TIME_SHANGHAI_FORMAT = "2006-01-02T15:04:05+08:00"
+
+func GetLocalTimeFromShanghaiString(raw string) time.Time {
+	result, _ := time.ParseInLocation(TIME_SHANGHAI_FORMAT, raw, ShangHaiLocation)
+	return result.Local()
+}
+
+func GetShanghaiTimeString(raw time.Time) string {
+	return raw.In(ShangHaiLocation).Format(TIME_SHANGHAI_FORMAT)
+}
