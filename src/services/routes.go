@@ -1,6 +1,7 @@
 package services
 
 import (
+	"go-go-go/src/services/test"
 	"net/http"
 
 	"go-go-go/src/config"
@@ -63,16 +64,5 @@ func registerRouters(engine *gin.Engine) {
 
 func registerMonitorRoutes(apiGroup *SpecialRouterGroup) {
 	apiGroupLv2 := &SpecialRouterGroup{apiGroup.Group("/lv2")}
-	apiGroupLv2.includeRoutes(MonitorRoutes)
-}
-
-// ---------------------------------------------------------------
-
-var MonitorRoutes = map[string]map[string]gin.HandlersChain{
-	"": {
-		"GET": gin.HandlersChain{Haha1},
-	},
-	"hah": {
-		"GET": gin.HandlersChain{Haha2},
-	},
+	apiGroupLv2.includeRoutes(test.MonitorRoutes)
 }
