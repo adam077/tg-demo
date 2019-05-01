@@ -38,7 +38,7 @@ func GetBaidu() []BaiduRank {
 	for _, data := range tempStruct.Data {
 		i++
 		result = append(result, BaiduRank{
-			Rank:     1,
+			Rank:     i,
 			Content:  data.Keyword,
 			Searches: data.Searches,
 		})

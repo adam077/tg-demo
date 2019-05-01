@@ -72,7 +72,7 @@ func GetZhihu() []ZhihuRank {
 	for _, data := range tempStruct.Data {
 		i++
 		result = append(result, ZhihuRank{
-			Rank:        1,
+			Rank:        i,
 			Content:     data.Target.TitleArea.Text,
 			Link:        data.Target.Link.URL,
 			Score:       data.FeedSpecific.Score,
