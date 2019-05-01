@@ -37,8 +37,6 @@ func KeyDiff(left, right map[string]interface{}) bool {
 
 var ShangHaiLocation, _ = time.LoadLocation("Asia/Shanghai")
 
-var TIME_SHANGHAI_FORMAT = "2006-01-02T15:04:05+08:00"
-
 func GetLocalTimeFromShanghaiString(raw string) time.Time {
 	result, _ := time.ParseInLocation(TIME_SHANGHAI_FORMAT, raw, ShangHaiLocation)
 	return result.Local()
@@ -46,4 +44,23 @@ func GetLocalTimeFromShanghaiString(raw string) time.Time {
 
 func GetShanghaiTimeString(raw time.Time) string {
 	return raw.In(ShangHaiLocation).Format(TIME_SHANGHAI_FORMAT)
+}
+
+const (
+	TIME_SHANGHAI_FORMAT = "2006-01-02T15:04:05+08:00"
+	DATE_FORMAT          = "2006-01-02"
+	TIME_DEFAULT_FORMAT  = "2006-01-02 15:04:05"
+)
+
+func GetTimeDateString(t time.Time) string {
+	// 时间转化为日期字符串
+	return t.Format(DATE_FORMAT)
+}
+
+func GetNowTime() (int64, string, int, int) {
+	now := time.Now()
+	today := GetTimeDateString(now)
+	hour := now.Hour()
+	min := (now.Minute() / 5) * 5
+	return now.Unix(), today, hour, min
 }

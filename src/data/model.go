@@ -19,6 +19,11 @@ type BaseModelUUID struct {
 	BaseModel
 }
 
+type BaseModelIncrementID struct {
+	ID int64 `gorm:"column:id;type:bigserial;primary_key;not null"`
+	BaseModel
+}
+
 type BaseModel struct {
 	CreatedAt time.Time `gorm:"column:create_time;type:timestamp with time zone" json:"-"`
 	UpdatedAt time.Time `gorm:"column:update_time;type:timestamp with time zone" json:"-"`

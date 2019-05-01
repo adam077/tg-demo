@@ -1,6 +1,6 @@
 serviceport: 8080
 debug: true
-enablescheduler: false
+enablescheduler: true
 enablecors: true
 dbconfig:
   host: 155.138.196.114

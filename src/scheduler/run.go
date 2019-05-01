@@ -7,5 +7,5 @@ import (
 func Run() {
 	jobrunner.Start(32, 0)
 
-	jobrunner.Schedule("@every 5m", SingleRunner{})
+	jobrunner.Schedule("@every 5m", HotSpotRunner{})
 }
