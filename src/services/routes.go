@@ -11,8 +11,8 @@ import (
 func SetupEngine() *gin.Engine {
 	engine := gin.New()
 	engine.RedirectTrailingSlash = true
-	gin.SetMode(gin.ReleaseMode)
-	engine.Use(TimeCostMiddleware)
+	//gin.SetMode(gin.ReleaseMode)
+	engine.Use(QueryMonitorMiddleware)
 	if true {
 		corsConfig := cors.DefaultConfig()
 		corsConfig.AllowCredentials = true

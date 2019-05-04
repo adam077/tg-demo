@@ -1,6 +1,8 @@
 package data
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestMigrateTable(t *testing.T) {
 	t1()
