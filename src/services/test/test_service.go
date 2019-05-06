@@ -1,8 +1,10 @@
 package test
 
 import (
+	"github.com/chenjiandongx/go-echarts/charts"
 	"github.com/gin-gonic/gin"
 	"go-go-go/src/utils"
+	"os"
 )
 
 type Person struct {
@@ -32,4 +34,18 @@ func GetPersons(c *gin.Context) {
 		Score: 5,
 	})
 	utils.SuccessResp(c, "", result)
+}
+
+func GetEcharts(c *gin.Context) {
+	n := []string{"hhh", "ddd", "asdf"}
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(charts.TitleOpts{Title: "yohaha"})
+	bar.AddXAxis(n).
+		AddYAxis("test1", []int{1, 2, 3}).
+		AddYAxis("test2", []int{2, 3, 4})
+	f, err := os.Create("bar.html")
+	if err != nil {
+		panic(err)
+	}
+	bar.Render(c.Writer, f)
 }
