@@ -13,6 +13,6 @@ var MonitorRoutes = map[string]map[string]gin.HandlersChain{
 		"GET": gin.HandlersChain{Haha2},
 	},
 	"echarts": {
-		"GET": gin.HandlersChain{GetEcharts},
+		"GET": gin.HandlersChain{GetZhihuEcharts},
 	},
 }
