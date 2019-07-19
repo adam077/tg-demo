@@ -11,7 +11,6 @@ var Config = Cf{
 
 func init() {
 	FillEnvWithString("POSTGRES_URL", &Config.PostgresUrl, false)
-	println(Config.PostgresUrl)
 }
 
 func FillEnvWithString(env string, value *string, required bool) {

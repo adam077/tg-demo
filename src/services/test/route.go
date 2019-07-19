@@ -15,4 +15,7 @@ var MonitorRoutes = map[string]map[string]gin.HandlersChain{
 	"echarts": {
 		"GET": gin.HandlersChain{GetZhihuEcharts},
 	},
+	"set_eat_what": {
+		"GET": gin.HandlersChain{EatWhat},
+	},
 }

@@ -12,12 +12,6 @@ import (
 	"time"
 )
 
-type CommonResponse struct {
-	Code    int                 `json:"code"`
-	Message string              `json:"message"`
-	Data    jsoniter.RawMessage `json:"data"`
-}
-
 type RequestConfig struct {
 	Method                string
 	Url                   string

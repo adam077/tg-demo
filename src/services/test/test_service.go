@@ -4,6 +4,7 @@ import (
 	"github.com/chenjiandongx/go-echarts/charts"
 	"github.com/gin-gonic/gin"
 	"go-go-go/src/data"
+	"go-go-go/src/scheduler"
 	"go-go-go/src/utils"
 	"net/http"
 	"os"
@@ -109,4 +110,18 @@ func GetRank(rankMap map[int]int, hour int) int {
 	} else {
 		return 50 - rank
 	}
+}
+
+func EatWhat(c *gin.Context) {
+	result := make([]map[string]string, 0)
+	params := struct {
+		Reset string `form:"reset"`
+	}{}
+	c.ShouldBindQuery(&params)
+	if params.Reset != "" {
+		scheduler.Reset()
+	} else {
+		scheduler.Do2()
+	}
+	utils.SuccessResp(c, "", result)
 }
