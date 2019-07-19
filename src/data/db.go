@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"go-go-go/src/config"
 	"sync"
 	"time"
 )
@@ -34,7 +33,7 @@ func GetDataDB(dbName string) *gorm.DB {
 }
 
 func initDataDB(dbName string) (*gorm.DB, error) {
-	conn := fmt.Sprintf(config.Config.PostgresUrl, dbName)
+	conn := fmt.Sprintf(Env.PostgresUrl, dbName)
 	if db, err := gorm.Open("postgres", conn); err != nil {
 		return nil, err
 	} else {

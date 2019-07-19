@@ -6,7 +6,7 @@ import (
 
 func TestMigrateTable(t *testing.T) {
 	//t1()
-	t2()
+	t3()
 }
 
 func t1() {
@@ -27,4 +27,9 @@ func t2() {
 	db := GetDataDB("default")
 	db.AutoMigrate(&EatWhatTable{})
 	db.AutoMigrate(&Ding{})
+}
+
+func t3() {
+	db := GetDataDB("config")
+	db.AutoMigrate(&ConfigTable{})
 }

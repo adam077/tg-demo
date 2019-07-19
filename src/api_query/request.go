@@ -78,13 +78,14 @@ func GetResponseData(config *RequestConfig, respData interface{}) error {
 		log.Error().Err(err).Str("message", string(message)).Msg("读取数据后台返回结果错误")
 		return errors.New("读取数据后台返回结果错误")
 	}
-	if err = jsoniter.Unmarshal(rawBytes, respData); err != nil {
-		message, _ := httputil.DumpRequest(req, true)
-		log.Error().Err(err).Str("message", string(message)).Msg("解析数据后台返回结果错误")
-		return errors.New("无法解析后台数据")
-	} else {
-		return nil
+	if respData != nil {
+		if err = jsoniter.Unmarshal(rawBytes, respData); err != nil {
+			message, _ := httputil.DumpRequest(req, true)
+			log.Error().Err(err).Str("message", string(message)).Msg("解析数据后台返回结果错误")
+			return errors.New("无法解析后台数据")
+		}
 	}
+	return nil
 }
 
 func GetResponseDataString(config *RequestConfig) (string, error) {
