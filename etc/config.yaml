@@ -1,1 +1,0 @@
-postgresurl: postgres://postgres:password@155.138.196.114:5432/%s?sslmode=disable

@@ -14,10 +14,6 @@ var (
 	dataDBMap = &sync.Map{}
 )
 
-func init() {
-
-}
-
 func GetDataDB(dbName string) *gorm.DB {
 	initMutex.Lock()
 	defer func() {

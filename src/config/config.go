@@ -1,23 +1,27 @@
 package config
 
 import (
-	"github.com/jinzhu/configor"
-	"log"
+	"fmt"
 	"os"
-	"path/filepath"
 )
 
-var Config = struct {
-	PostgresUrl string `env:"POSTGRES_URL" required:"true"`
-}{}
-
-var (
-	Root = os.Getenv("GOPATH") + "/src/go-go-go"
-)
+var Config = Cf{
+	PostgresUrl: "postgres://postgres:password@139.180.202.66:5432/%s?sslmode=disable",
+}
 
 func init() {
-	var err error
-	if err = configor.Load(&Config, filepath.Join(Root, "etc/config.yaml")); err != nil {
-		log.Fatalf("load config error: %v", err)
+	FillEnvWithString("POSTGRES_URL", &Config.PostgresUrl, false)
+	println(Config.PostgresUrl)
+}
+
+func FillEnvWithString(env string, value *string, required bool) {
+	if envValue, exist := os.LookupEnv("POSTGRES_URL"); exist {
+		*value = envValue
+	} else if required {
+		panic(fmt.Sprintf("no env: %s", env))
 	}
+}
+
+type Cf struct {
+	PostgresUrl string
 }
