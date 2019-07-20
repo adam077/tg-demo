@@ -1,49 +1,53 @@
 package scheduler
 
 import (
-	"fmt"
 	"go-go-go/src/data"
 	"go-go-go/src/ding-talk"
 	"math/rand"
 	"sort"
-	"time"
 )
 
 type EatWhat struct {
+	do string
 }
 
-var eatMap = map[string]int{}
+const (
+	Choose      = "choose"
+	Result      = "result"
+	ResetResult = "reset"
+)
+
+var eatMap = map[string][]string{}
+
+// service
+// 发送投票选项  Task1
+// 投票
+// 发送投票结果 Task2
+// 清空投票结果 Task3
+
+// task
+// 11、17点发送投票选项
+// 12、18点发送投票结果
+// 14、20点清空投票结果
 
 func (runner EatWhat) Run() {
-	if time.Now().Hour() == 19 {
-		Reset()
-	}
-	if data.GetConfig(data.RandomEat) != "" {
-		Do2("")
+	switch runner.do {
+	case Choose:
+		Task1()
+	case Result:
+		Task2()
+	case ResetResult:
+		Task3()
 	}
 }
 
 func Reset() {
-	eatMap = make(map[string]int, 0)
+	eatMap = make(map[string][]string, 0)
 }
 
-func Do2(eat string) {
+func Task1() {
+	// 发送投票选项
 	names := data.GetEatNames()
-
-	if eat == "" {
-		if len(names) == 0 {
-			return
-		}
-		ind := rand.Intn(len(names))
-		eat = names[ind].Name
-	}
-	eatMap[eat] = eatMap[eat] + 1
-
-	result := GetSortedEats(names)
-	resultStr := "" //  "票数|吃啥\n"
-	for x := range result {
-		resultStr = resultStr + fmt.Sprintf("%d : %s \n", result[x].Count, result[x].Name)
-	}
 	chatId := ""
 	var dings = data.GetDingChatId("eat_what")
 	if len(dings) > 0 {
@@ -51,25 +55,87 @@ func Do2(eat string) {
 	}
 	if chatId != "" {
 		//go ding_talk.SendDingMessage(chatId, resultStr)
+		choose := make([]ding_talk.DingChoose, 0)
+		choose = append(choose, ding_talk.DingChoose{
+			Title:     "完全随机",
+			ActionURL: data.Env.SelfUrl + "/lv1/lv2/set_eat_what?eat=",
+		})
+		for x := range names {
+			choose = append(choose, ding_talk.DingChoose{
+				Title:     names[x].Name,
+				ActionURL: data.Env.SelfUrl + "/lv1/lv2/set_eat_what?eat=" + names[x].Name,
+			})
+
+		}
+		go ding_talk.SendDingChoose(chatId, "投票啦", "每人限制点一次，或随机投出5张，或固定1张+随机4张", choose)
+	}
+}
+
+func Task2() {
+	// 发送投票结果
+	chatId := ""
+	var dings = data.GetDingChatId("eat_what")
+	if len(dings) > 0 {
+		chatId = dings[0].ChatId
+	}
+	if chatId != "" {
 		go ding_talk.SendDingLink(chatId, ding_talk.Link{
-			Text:       resultStr,
+			Text:       "点击查看结果",
 			Title:      "吃啥好呢",
 			MessageUrl: data.Env.SelfUrl + "/lv1/lv2/eat_what",
 		})
 	}
-
 }
 
-func GetSortedEats(names []*data.EatWhatTable) []Eat {
+func Task3() {
+	// 清空投票结果
+	eatMap = make(map[string][]string, 0)
+}
+
+func EnrichEatMap(ip string, eat string) {
+	if _, ok := eatMap[ip]; ok {
+		return
+	}
+	names := data.GetEatNames()
+	eats := make([]string, 0)
+	if eat == "" {
+		ind := rand.Intn(len(names))
+		eats = append(eats, names[ind].Name)
+	} else {
+		eats = append(eats, eat)
+	}
+	for i := 0; i < 4; i++ {
+		ind := rand.Intn(len(names))
+		eats = append(eats, names[ind].Name)
+	}
+	eatMap[ip] = eats
+}
+
+func GetSortedEats(names []*data.EatWhatTable) ([]Eat, []string) {
 	result := make([]Eat, 0)
+	eatCountMap := make(map[string]int)
+	eatIpMap := make(map[string]map[string]int)
+	ipList := make([]string, 0)
+	for ip, eats := range eatMap {
+		ipList = append(ipList, ip)
+		for _, eat := range eats {
+			eatCountMap[eat] = eatCountMap[eat] + 1
+			if _, ok := eatIpMap[eat]; !ok {
+				eatIpMap[eat] = make(map[string]int)
+			}
+			eatIpMap[eat][ip] = eatIpMap[eat][ip] + 1
+		}
+	}
 	for x := range names {
+		eat := names[x].Name
 		result = append(result, Eat{
-			Name:  names[x].Name,
-			Count: eatMap[names[x].Name],
+			Name:    eat,
+			Count:   eatCountMap[eat],
+			IpCount: eatIpMap[eat],
 		})
 	}
 	sort.Sort(EatWrapper{result, EatWrapperOrder})
-	return result
+	return result, ipList
 
 }
 
@@ -78,8 +144,9 @@ func EatWrapperOrder(p, q Eat) bool {
 }
 
 type Eat struct {
-	Name  string
-	Count int
+	Name    string
+	Count   int
+	IpCount map[string]int
 }
 
 type EatWrapper struct {

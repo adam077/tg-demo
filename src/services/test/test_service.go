@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/chenjiandongx/go-echarts/charts"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"go-go-go/src/data"
 	"go-go-go/src/scheduler"
 	"go-go-go/src/utils"
@@ -47,7 +48,11 @@ func GetEcharts(c *gin.Context) {
 	bar.SetGlobalOptions(charts.TitleOpts{Title: "yohaha"})
 	bar.AddXAxis(n).
 		AddYAxis("test1", []int{1, 2, 3})
-	bar.XYReversal().Render(c.Writer)
+	err := bar.XYReversal().Render(c.Writer)
+	if err != nil {
+		log.Warn().Msg(err.Error())
+		utils.ErrorResp(c, http.StatusBadRequest, 400, err.Error())
+	}
 }
 
 func GetZhihuEcharts(c *gin.Context) {
@@ -88,7 +93,11 @@ func GetZhihuEcharts(c *gin.Context) {
 		}
 		bar.AddYAxis(content, rankData)
 	}
-	bar.Render(c.Writer)
+	err := bar.Render(c.Writer)
+	if err != nil {
+		log.Warn().Msg(err.Error())
+		utils.ErrorResp(c, http.StatusBadRequest, 400, err.Error())
+	}
 }
 
 func GetRank(rankMap map[int]int, hour int) int {
@@ -100,18 +109,25 @@ func GetRank(rankMap map[int]int, hour int) int {
 }
 
 func EatWhat(c *gin.Context) {
-	result := make([]map[string]string, 0)
 	params := struct {
-		Eat   string `form:"eat"`
-		Reset string `form:"reset"`
+		Eat string `form:"eat"`
+		Set string `form:"set"`
 	}{}
+	log.Info().Msg(c.GetHeader("User-Agent"))
 	c.ShouldBindQuery(&params)
-	if params.Reset != "" {
-		scheduler.Reset()
+	if params.Set != "" {
+		switch params.Set {
+		case scheduler.Choose:
+			scheduler.Task1()
+		case scheduler.Result:
+			scheduler.Task2()
+		case scheduler.ResetResult:
+			scheduler.Task3()
+		}
 	} else {
-		scheduler.Do2(params.Eat)
+		scheduler.EnrichEatMap(c.ClientIP(), params.Eat)
 	}
-	utils.SuccessResp(c, "", result)
+	SeeEatWhat(c)
 }
 
 func SeeEatWhat(c *gin.Context) {
@@ -120,7 +136,7 @@ func SeeEatWhat(c *gin.Context) {
 		return
 	}
 
-	result := scheduler.GetSortedEats(names)
+	result, ipList := scheduler.GetSortedEats(names)
 	name := make([]string, 0)
 	num := make([]int, 0)
 	sort.Slice(result, func(i, j int) bool {
@@ -130,9 +146,25 @@ func SeeEatWhat(c *gin.Context) {
 		name = append(name, result[x].Name)
 		num = append(num, result[x].Count)
 	}
+
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(charts.TitleOpts{Title: "吃啥呢"})
 	bar.AddXAxis(name).
-		AddYAxis("票数", num)
-	bar.XYReversal().Render(c.Writer)
+		AddYAxis("总票数", num)
+	for _, ip := range ipList {
+		temp := make([]int, 0)
+		for _, one := range result {
+			c := 0
+			if one.IpCount != nil {
+				c = one.IpCount[ip]
+			}
+			temp = append(temp, c)
+		}
+		bar.AddYAxis(ip, temp)
+	}
+	err := bar.XYReversal().Render(c.Writer)
+	if err != nil {
+		log.Warn().Msg(err.Error())
+		utils.ErrorResp(c, http.StatusBadRequest, 400, err.Error())
+	}
 }

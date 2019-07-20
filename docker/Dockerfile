@@ -24,6 +24,10 @@ RUN apk --update add ca-certificates tzdata && \
 
 WORKDIR /go/src/go-go-go
 
+# 这里需要需要一个包里面的模板
+# https://www.cnblogs.com/sparkdev/p/9573248.html
+COPY --from=build /go/src/go-go-go/vendor/github.com/chenjiandongx ./vendor/github.com/chenjiandongx
+
 COPY --from=build /go/src/go-go-go/main .
 
 ENTRYPOINT ["./main"]

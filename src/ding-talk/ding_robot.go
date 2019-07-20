@@ -89,3 +89,53 @@ func SendDingLink(chatId string, link Link) error {
 	}
 	return nil
 }
+
+type DingChoose struct {
+	Title     string `json:"title"`
+	ActionURL string `json:"actionURL"`
+}
+
+type DingActionCard struct {
+	Title string       `json:"title"`
+	Text  string       `json:"text"`
+	Btns  []DingChoose `json:"btns"`
+}
+
+func SendDingChoose(chatId string, title string, text string, choose []DingChoose) error {
+	if chatId == "" {
+		return nil
+	}
+	body := struct {
+		MsgType    string         `json:"msgtype"`
+		ActionCard DingActionCard `json:"actionCard"`
+	}{
+		MsgType: "actionCard",
+		ActionCard: DingActionCard{
+			Title: title,
+			Text:  text,
+			Btns:  choose,
+		},
+	}
+
+	requestData, err := jsoniter.Marshal(&body)
+	if err != nil {
+		return err
+	}
+
+	requestConfig := &api_query.RequestConfig{
+		Method: http.MethodPost,
+		Url:    "https://oapi.dingtalk.com/robot/send",
+		Params: map[string]string{
+			"access_token": chatId,
+		},
+		Body: bytes.NewReader(requestData),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+	}
+
+	if err := api_query.GetResponseData(requestConfig, nil); err != nil {
+		return err
+	}
+	return nil
+}
