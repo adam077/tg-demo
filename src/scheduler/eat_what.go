@@ -23,21 +23,19 @@ var eatMap = map[string][]string{}
 // 发送投票选项  Task1
 // 投票
 // 发送投票结果 Task2
-// 清空投票结果 Task3
+// 清空投票结果 ResetTask
 
 // task
-// 11、17点发送投票选项
+// 11、17点清空投票结果+发送投票选项
 // 12、18点发送投票结果
-// 14、20点清空投票结果
 
 func (runner EatWhat) Run() {
 	switch runner.do {
 	case Choose:
+		ResetTask()
 		Task1()
 	case Result:
 		Task2()
-	case ResetResult:
-		Task3()
 	}
 }
 
@@ -87,7 +85,7 @@ func Task2() {
 	}
 }
 
-func Task3() {
+func ResetTask() {
 	// 清空投票结果
 	eatMap = make(map[string][]string, 0)
 }

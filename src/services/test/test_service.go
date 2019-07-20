@@ -113,7 +113,6 @@ func EatWhat(c *gin.Context) {
 		Eat string `form:"eat"`
 		Set string `form:"set"`
 	}{}
-	log.Info().Msg(c.GetHeader("User-Agent"))
 	c.ShouldBindQuery(&params)
 	if params.Set != "" {
 		switch params.Set {
@@ -122,7 +121,7 @@ func EatWhat(c *gin.Context) {
 		case scheduler.Result:
 			scheduler.Task2()
 		case scheduler.ResetResult:
-			scheduler.Task3()
+			scheduler.ResetTask()
 		}
 	} else {
 		scheduler.EnrichEatMap(c.ClientIP(), params.Eat)
