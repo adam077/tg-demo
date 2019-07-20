@@ -7,7 +7,7 @@ import (
 	"go-go-go/src/scheduler"
 	"go-go-go/src/utils"
 	"net/http"
-	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -46,13 +46,8 @@ func GetEcharts(c *gin.Context) {
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(charts.TitleOpts{Title: "yohaha"})
 	bar.AddXAxis(n).
-		AddYAxis("test1", []int{1, 2, 3}).
-		AddYAxis("test2", []int{2, 3, 4})
-	f, err := os.Create("bar.html")
-	if err != nil {
-		panic(err)
-	}
-	bar.Render(c.Writer, f)
+		AddYAxis("test1", []int{1, 2, 3})
+	bar.XYReversal().Render(c.Writer)
 }
 
 func GetZhihuEcharts(c *gin.Context) {
@@ -91,17 +86,9 @@ func GetZhihuEcharts(c *gin.Context) {
 		for hour := 0; hour < 24; hour++ {
 			rankData = append(rankData, GetRank(hourMap, hour))
 		}
-		AddToBar(bar, content, rankData)
+		bar.AddYAxis(content, rankData)
 	}
-	f, err := os.Create("bar.html")
-	if err != nil {
-		panic(err)
-	}
-	bar.Render(c.Writer, f)
-}
-
-func AddToBar(bar *charts.Line, name string, rankData []int) {
-	bar.AddYAxis(name, rankData)
+	bar.Render(c.Writer)
 }
 
 func GetRank(rankMap map[int]int, hour int) int {
@@ -115,13 +102,37 @@ func GetRank(rankMap map[int]int, hour int) int {
 func EatWhat(c *gin.Context) {
 	result := make([]map[string]string, 0)
 	params := struct {
+		Eat   string `form:"eat"`
 		Reset string `form:"reset"`
 	}{}
 	c.ShouldBindQuery(&params)
 	if params.Reset != "" {
 		scheduler.Reset()
 	} else {
-		scheduler.Do2()
+		scheduler.Do2(params.Eat)
 	}
 	utils.SuccessResp(c, "", result)
+}
+
+func SeeEatWhat(c *gin.Context) {
+	names := data.GetEatNames()
+	if len(names) == 0 {
+		return
+	}
+
+	result := scheduler.GetSortedEats(names)
+	name := make([]string, 0)
+	num := make([]int, 0)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Count < result[j].Count
+	})
+	for x := range result {
+		name = append(name, result[x].Name)
+		num = append(num, result[x].Count)
+	}
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(charts.TitleOpts{Title: "吃啥呢"})
+	bar.AddXAxis(name).
+		AddYAxis("票数", num)
+	bar.XYReversal().Render(c.Writer)
 }

@@ -18,34 +18,29 @@ func (runner EatWhat) Run() {
 	if time.Now().Hour() == 19 {
 		Reset()
 	}
-	Do2()
+	if data.GetConfig(data.RandomEat) != "" {
+		Do2("")
+	}
 }
 
 func Reset() {
 	eatMap = make(map[string]int, 0)
 }
 
-func Do2() {
+func Do2(eat string) {
 	names := data.GetEatNames()
-	if len(names) == 0 {
-		return
-	}
-	ind := rand.Intn(len(names))
-	result := make([]Eat, 0)
-	for x := range names {
-		if _, ok := eatMap[names[x].Name]; !ok {
-			eatMap[names[x].Name] = 0
+
+	if eat == "" {
+		if len(names) == 0 {
+			return
 		}
-		if ind == x {
-			eatMap[names[x].Name] = eatMap[names[x].Name] + 1
-		}
-		result = append(result, Eat{
-			Name:  names[x].Name,
-			Count: eatMap[names[x].Name],
-		})
+		ind := rand.Intn(len(names))
+		eat = names[ind].Name
 	}
-	sort.Sort(EatWrapper{result, EatWrapperOrder})
-	resultStr := "票数|吃啥\n"
+	eatMap[eat] = eatMap[eat] + 1
+
+	result := GetSortedEats(names)
+	resultStr := "" //  "票数|吃啥\n"
 	for x := range result {
 		resultStr = resultStr + fmt.Sprintf("%d : %s \n", result[x].Count, result[x].Name)
 	}
@@ -55,8 +50,26 @@ func Do2() {
 		chatId = dings[0].ChatId
 	}
 	if chatId != "" {
-		go ding_talk.SendDingMessage(chatId, resultStr)
+		//go ding_talk.SendDingMessage(chatId, resultStr)
+		go ding_talk.SendDingLink(chatId, ding_talk.Link{
+			Text:       resultStr,
+			Title:      "吃啥好呢",
+			MessageUrl: data.Env.SelfUrl + "/lv1/lv2/eat_what",
+		})
 	}
+
+}
+
+func GetSortedEats(names []*data.EatWhatTable) []Eat {
+	result := make([]Eat, 0)
+	for x := range names {
+		result = append(result, Eat{
+			Name:  names[x].Name,
+			Count: eatMap[names[x].Name],
+		})
+	}
+	sort.Sort(EatWrapper{result, EatWrapperOrder})
+	return result
 
 }
 

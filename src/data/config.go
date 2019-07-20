@@ -9,12 +9,14 @@ import (
 )
 
 var Env = Cf{
+	SelfUrl:     "http://139.180.202.66:8081",
 	PostgresUrl: "postgres://postgres:password@139.180.202.66:5432/%s?sslmode=disable",
 }
 
 const (
 	// for config
 	Scheduler = "scheduler"
+	RandomEat = "random_eat"
 )
 
 var configMap sync.Map
@@ -28,6 +30,7 @@ func GetConfig(config string) string {
 }
 
 func init() {
+	FillEnvWithString("SELF_URL", &Env.SelfUrl, false)
 	FillEnvWithString("POSTGRES_URL", &Env.PostgresUrl, false)
 	UpdateConfig()
 	go func() {
@@ -42,7 +45,7 @@ func init() {
 }
 
 func FillEnvWithString(env string, value *string, required bool) {
-	if envValue, exist := os.LookupEnv("POSTGRES_URL"); exist {
+	if envValue, exist := os.LookupEnv(env); exist {
 		*value = envValue
 	} else if required {
 		panic(fmt.Sprintf("no env: %s", env))
@@ -50,6 +53,7 @@ func FillEnvWithString(env string, value *string, required bool) {
 }
 
 type Cf struct {
+	SelfUrl     string
 	PostgresUrl string
 }
 
