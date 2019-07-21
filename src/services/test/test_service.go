@@ -124,7 +124,10 @@ func EatWhat(c *gin.Context) {
 			scheduler.ResetTask()
 		}
 	} else {
-		scheduler.EnrichEatMap(c.ClientIP(), params.Eat)
+		succ := scheduler.EnrichEatMap(c.ClientIP(), params.Eat)
+		if succ {
+			scheduler.Task1()
+		}
 	}
 	SeeEatWhat(c)
 }

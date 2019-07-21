@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"fmt"
 	"go-go-go/src/data"
 	"go-go-go/src/ding-talk"
 	"math/rand"
@@ -58,9 +59,20 @@ func Task1() {
 			Title:     "完全随机",
 			ActionURL: data.Env.SelfUrl + "/lv1/lv2/set_eat_what?eat=",
 		})
+		eatCountMap := make(map[string]int)
+		for _, eats := range eatMap {
+			for _, eat := range eats {
+				eatCountMap[eat] = eatCountMap[eat] + 1
+			}
+		}
+
 		for x := range names {
+			name := names[x].Name
+			if c, ok := eatCountMap[name]; ok {
+				name = fmt.Sprintf("%s (%d)", name, c)
+			}
 			choose = append(choose, ding_talk.DingChoose{
-				Title:     names[x].Name,
+				Title:     name,
 				ActionURL: data.Env.SelfUrl + "/lv1/lv2/set_eat_what?eat=" + names[x].Name,
 			})
 
@@ -90,9 +102,9 @@ func ResetTask() {
 	eatMap = make(map[string][]string, 0)
 }
 
-func EnrichEatMap(ip string, eat string) {
+func EnrichEatMap(ip string, eat string) bool {
 	if _, ok := eatMap[ip]; ok {
-		return
+		return false
 	}
 	names := data.GetEatNames()
 	eats := make([]string, 0)
@@ -107,6 +119,7 @@ func EnrichEatMap(ip string, eat string) {
 		eats = append(eats, names[ind].Name)
 	}
 	eatMap[ip] = eats
+	return true
 }
 
 func GetSortedEats(names []*data.EatWhatTable) ([]Eat, []string) {
