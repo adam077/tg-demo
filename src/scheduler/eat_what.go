@@ -6,6 +6,7 @@ import (
 	"go-go-go/src/ding-talk"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 type EatWhat struct {
@@ -77,8 +78,30 @@ func Task1() {
 			})
 
 		}
-		go ding_talk.SendDingChoose(chatId, "投票啦", "每人限制点一次，或随机投出5张，或固定1张+随机4张", choose)
+		fixNum, rndNum := numSet()
+		go ding_talk.SendDingChoose(chatId, "投票啦",
+			fmt.Sprintf("每人限制点一次，或随机投出%d张，或固定%d张+随机%d张", fixNum+rndNum, fixNum, rndNum), choose)
 	}
+}
+
+func numSet() (int, int) {
+	fixNum := 1
+	rndNum := 4
+	fix := data.GetConfig("fix_num")
+	if fix != "" {
+		t, err := strconv.Atoi(fix)
+		if err == nil {
+			fixNum = t
+		}
+	}
+	rnd := data.GetConfig("rnd_num")
+	if rnd != "" {
+		t, err := strconv.Atoi(rnd)
+		if err == nil {
+			rndNum = t
+		}
+	}
+	return fixNum, rndNum
 }
 
 func Task2() {
@@ -108,13 +131,16 @@ func EnrichEatMap(ip string, eat string) bool {
 	}
 	names := data.GetEatNames()
 	eats := make([]string, 0)
-	if eat == "" {
-		ind := rand.Intn(len(names))
-		eats = append(eats, names[ind].Name)
-	} else {
-		eats = append(eats, eat)
+	fixNum, rndNum := numSet()
+	for i := 0; i < fixNum; i++ {
+		if eat == "" {
+			ind := rand.Intn(len(names))
+			eats = append(eats, names[ind].Name)
+		} else {
+			eats = append(eats, eat)
+		}
 	}
-	for i := 0; i < 4; i++ {
+	for i := 0; i < rndNum; i++ {
 		ind := rand.Intn(len(names))
 		eats = append(eats, names[ind].Name)
 	}
