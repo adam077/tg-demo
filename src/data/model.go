@@ -1,21 +1,11 @@
 package data
 
 import (
-	"github.com/jinzhu/gorm"
 	"time"
 )
 
-type TableTest struct {
-	BaseModelUUID
-	Test string `gorm:"column:test;type:text"`
-}
-
-func (TableTest) TableName() string {
-	return "table_test"
-}
-
 type BaseModelUUID struct {
-	ID string `gorm:"column:id;type:char(32);primary_key;not null"`
+	ID string `gorm:"column:id;type:char(36);primary_key;not null"`
 	BaseModel
 }
 
@@ -29,27 +19,24 @@ type BaseModel struct {
 	UpdatedAt time.Time `gorm:"column:update_time;type:timestamp with time zone" json:"-"`
 }
 
-func (*BaseModel) Indexes() map[string][]string {
-	return map[string][]string{}
-}
-
-func (*BaseModel) UniqueIndexes() map[string][]string {
-	return map[string][]string{}
-}
-
-func MigrateTable(db *gorm.DB, tableModel ModelInterface) {
-	db.AutoMigrate(tableModel)
-
-	for k, v := range tableModel.Indexes() {
-		db.Model(tableModel).AddIndex(k, v...)
+func UpdateOne(target interface{}, targetMap map[string]interface{}) error { // with id
+	dbConn := GetDataDB("default")
+	if targetMap == nil || len(targetMap) == 0 {
+		return nil
 	}
-
-	for k, v := range tableModel.UniqueIndexes() {
-		db.Model(tableModel).AddUniqueIndex(k, v...)
-	}
+	return dbConn.Model(target).Update(targetMap).Error
 }
 
-type ModelInterface interface {
-	Indexes() map[string][]string
-	UniqueIndexes() map[string][]string
+func AddOne(target interface{}) error {
+	dbConn := GetDataDB("default")
+	return dbConn.Create(target).Error
+}
+
+func DeleteOne(target interface{}) error {
+	dbConn := GetDataDB("default")
+	err := dbConn.Delete(target).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

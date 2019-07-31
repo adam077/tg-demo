@@ -6,26 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Resp(c *gin.Context, statusCode, errorCode int, message string, data interface{}) {
-	c.JSON(statusCode, gin.H{"code": errorCode, "message": message, "data": data})
-}
-
-func AbortResp(c *gin.Context, statusCode, errorCode int, message string, data interface{}) {
-	c.AbortWithStatusJSON(statusCode, gin.H{"code": errorCode, "message": message, "data": data})
-}
-
 func SuccessResp(c *gin.Context, message string, data interface{}) {
-	Resp(c, http.StatusOK, 0, message, data)
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": message, "data": data})
 }
 
-func ErrorResp(c *gin.Context, statusCode, errCode int, message string) {
-	AbortResp(c, statusCode, errCode, message, nil)
-}
-
-func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
-		}
-	}
+func ErrorResp(c *gin.Context, errCode int, message string) {
+	c.AbortWithStatusJSON(400, gin.H{"code": errCode, "message": message, "data": nil})
 }

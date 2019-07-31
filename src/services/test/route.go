@@ -1,24 +1,31 @@
 package test
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
-var MonitorRoutes = map[string]map[string]gin.HandlersChain{
-	"get_persons": {
-		"GET": gin.HandlersChain{GetPersons},
+var AuthRoutes = map[string]map[string]gin.HandlersChain{
+	"login": {
+		http.MethodPost: gin.HandlersChain{Login},
 	},
-	"": {
-		"GET": gin.HandlersChain{Haha1},
+	"logout": {
+		http.MethodPost: gin.HandlersChain{Logout},
 	},
-	"hah": {
-		"GET": gin.HandlersChain{Haha2},
+}
+
+var CommonRoutes = map[string]map[string]gin.HandlersChain{
+	"screens": {
+		// 获得该用户下的大屏
+		http.MethodGet: gin.HandlersChain{GetScreens},
+		// 新增大屏
+		http.MethodPost: gin.HandlersChain{AddScreen},
+		// 修改大屏配置
+		http.MethodPatch: gin.HandlersChain{PatchScreen},
+		// 删除
+		http.MethodDelete: gin.HandlersChain{DeleteScreen},
 	},
-	"echarts": {
-		"GET": gin.HandlersChain{GetZhihuEcharts},
-	},
-	"set_eat_what": {
-		"GET": gin.HandlersChain{EatWhat},
-	},
-	"eat_what": {
-		"GET": gin.HandlersChain{SeeEatWhat},
+	"get_components": {
+		http.MethodPost: gin.HandlersChain{GetComponents},
 	},
 }

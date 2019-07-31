@@ -1,8 +1,8 @@
 package services
 
 import (
-	"go-go-go/src/services/test"
 	"net/http"
+	"tg-demo/src/services/test"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -31,9 +31,15 @@ func SetupEngine() *gin.Engine {
 }
 
 func registerRouters(engine *gin.Engine) {
-	apiGroupLv1 := engine.Group("/lv1")
-	apiGroupLv2 := apiGroupLv1.Group("/lv2")
-	includeRoutes(apiGroupLv2, test.MonitorRoutes)
+	engine.Static("/assets", "./src/assets")
+	engine.StaticFS("/assets_list", http.Dir("src/assets"))
+
+	apiGroupLv1 := engine.Group("/auth")
+	includeRoutes(apiGroupLv1, test.AuthRoutes)
+
+	apiGroupLv2 := engine.Group("/query")
+	apiGroupLv2.Use(CheckAuth)
+	includeRoutes(apiGroupLv2, test.CommonRoutes)
 }
 
 func includeRoutes(group *gin.RouterGroup, routes map[string]map[string]gin.HandlersChain) {

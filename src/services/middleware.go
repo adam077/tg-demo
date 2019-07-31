@@ -6,6 +6,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
+	"tg-demo/src/single-cache"
+	"tg-demo/src/utils"
 )
 
 func QueryMonitorMiddleware(c *gin.Context) {
@@ -29,5 +31,17 @@ func QueryMonitorMiddleware(c *gin.Context) {
 				Str("body", string(body)).Msg("api record")
 		}
 	}(body)
+	c.Next()
+}
+
+func CheckAuth(c *gin.Context) {
+	token := c.GetHeader("Token")
+	userId, ok := single_cache.Get(token)
+	if !ok {
+		utils.ErrorResp(c, 40000, "")
+		return
+	}
+	single_cache.Set(token, userId, 24*60*60)
+	c.Request.Header.Set("UserId", userId)
 	c.Next()
 }

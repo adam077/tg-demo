@@ -1,7 +1,11 @@
 package utils
 
 import (
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
+	"github.com/satori/go.uuid"
 	"runtime"
 	"time"
 )
@@ -63,4 +67,43 @@ func GetNowTime() (int64, string, int, int) {
 	hour := now.Hour()
 	min := (now.Minute() / 5) * 5
 	return now.Unix(), today, hour, min
+}
+
+func GetUUID() string {
+	return uuid.NewV4().String()
+}
+
+var secrets = "shabi_labike"
+
+func GetToken(user string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":     user,
+		"create_time": time.Now(), // 不同的人登陆同一个账号
+	})
+	return token.SignedString([]byte(secrets))
+
+}
+
+func GetUser(tokenStr string) (string, error) {
+	// 检查token是否在redis中存在，不存在则拒绝
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("not authorization")
+		}
+		return []byte(secrets), nil
+	})
+	if err != nil {
+		// token 搞不出来，这应该是哪里实现有错误
+		return "", err
+	}
+	// 这里从jwt中反解出userId，从而可以进行下一步操作
+	userId := ""
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userId, ok = claims["user_id"].(string)
+		if !ok {
+			return "", errors.New("")
+		}
+	}
+	return userId, nil
 }
