@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"tg-demo/src/utils"
 )
 
 var AuthRoutes = map[string]map[string]gin.HandlersChain{
@@ -15,6 +16,11 @@ var AuthRoutes = map[string]map[string]gin.HandlersChain{
 }
 
 var CommonRoutes = map[string]map[string]gin.HandlersChain{
+	"hi": {
+		http.MethodGet: gin.HandlersChain{func(context *gin.Context) {
+			utils.SuccessResp(context, "hello word", nil)
+		}},
+	},
 	"screens": {
 		// 获得该用户下的大屏
 		http.MethodGet: gin.HandlersChain{GetScreens},
@@ -25,7 +31,7 @@ var CommonRoutes = map[string]map[string]gin.HandlersChain{
 		// 删除
 		http.MethodDelete: gin.HandlersChain{DeleteScreen},
 	},
-	"get_components": {
-		http.MethodPost: gin.HandlersChain{GetComponents},
+	"components": {
+		http.MethodGet: gin.HandlersChain{GetComponents},
 	},
 }

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/jinzhu/gorm"
 	"time"
 )
 
@@ -19,24 +20,17 @@ type BaseModel struct {
 	UpdatedAt time.Time `gorm:"column:update_time;type:timestamp with time zone" json:"-"`
 }
 
-func UpdateOne(target interface{}, targetMap map[string]interface{}) error { // with id
-	dbConn := GetDataDB("default")
+func UpdateOne(dbConn *gorm.DB, target interface{}, targetMap map[string]interface{}) error { // with id
 	if targetMap == nil || len(targetMap) == 0 {
 		return nil
 	}
 	return dbConn.Model(target).Update(targetMap).Error
 }
 
-func AddOne(target interface{}) error {
-	dbConn := GetDataDB("default")
+func AddOne(dbConn *gorm.DB, target interface{}) error {
 	return dbConn.Create(target).Error
 }
 
-func DeleteOne(target interface{}) error {
-	dbConn := GetDataDB("default")
-	err := dbConn.Delete(target).Error
-	if err != nil {
-		return err
-	}
-	return nil
+func DeleteOne(dbConn *gorm.DB, target interface{}) error {
+	return dbConn.Delete(target).Error
 }

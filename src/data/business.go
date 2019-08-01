@@ -26,13 +26,13 @@ func GetUsers(user string) []*User {
 	return temp
 }
 
-func GetUserWithScreens(user string) []*User {
+func GetUserWithScreens(userId string) []*User {
 	dataConn := GetDataDB("default")
 	var temp []*User
 	err := dataConn.
 		Preload("UserScreens").
 		Preload("UserScreens.Screen").
-		Find(&temp, "name = ?", user).Error
+		Find(&temp, "id = ?", userId).Error
 	if err != nil {
 		panic(err)
 	}

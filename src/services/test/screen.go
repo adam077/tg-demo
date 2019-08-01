@@ -28,6 +28,7 @@ func GetScreens(c *gin.Context) {
 		for _, UserScreen := range user.UserScreens {
 			if UserScreen.Screen != nil {
 				toAdd := Screen{
+					Id:   UserScreen.Screen.ID,
 					Name: UserScreen.Screen.Name,
 				}
 				json.Unmarshal(UserScreen.Screen.Content, &toAdd.Content)
@@ -39,6 +40,11 @@ func GetScreens(c *gin.Context) {
 }
 
 func AddScreen(c *gin.Context) {
+	tx, succ := data.GetDataDB("default").Begin(), new(bool)
+	defer utils.FinishTx(tx, succ)
+
+	userId := c.GetHeader("UserId")
+	var err error
 	body, _ := c.GetRawData()
 	var one Screen
 	json.Unmarshal(body, &one)
@@ -46,18 +52,52 @@ func AddScreen(c *gin.Context) {
 	oneToAdd.ID = utils.GetUUID()
 	oneToAdd.Name = one.Name
 	oneToAdd.Content, _ = json.Marshal(one.Content)
-	result := data.AddOne(&oneToAdd)
-	utils.SuccessResp(c, "", result)
+	// 添加屏
+	if err = data.AddOne(tx, &oneToAdd); err != nil {
+		utils.ErrorResp(c, 40000, err.Error())
+		return
+	}
+	// 添加关系
+	relationToAdd := data.UserScreen{}
+	relationToAdd.ID = utils.GetUUID()
+	relationToAdd.UserId = userId
+	relationToAdd.ScreenId = oneToAdd.ID
+	if err = data.AddOne(tx, &relationToAdd); err != nil {
+		utils.ErrorResp(c, 40000, err.Error())
+		return
+	}
+	utils.SetTrue(succ)
+	utils.SuccessResp(c, "", err)
 }
 
 func DeleteScreen(c *gin.Context) {
-	body, _ := c.GetRawData()
-	var one Screen
-	json.Unmarshal(body, &one)
-	oneToAdd := data.Screen{}
-	oneToAdd.ID = one.Id
-	result := data.DeleteOne(&oneToAdd)
-	utils.SuccessResp(c, "", result)
+	tx, succ := data.GetDataDB("default").Begin(), new(bool)
+	defer utils.FinishTx(tx, succ)
+
+	userId := c.GetHeader("UserId")
+	var err error
+	users := data.GetUserWithScreens(userId)
+	screenId, _ := c.GetQuery("screenId")
+	for _, user := range users {
+		for _, UserScreen := range user.UserScreens {
+			if UserScreen.Screen != nil {
+				if UserScreen.Screen.ID == screenId {
+					if err = data.DeleteOne(tx, UserScreen); err != nil {
+						utils.ErrorResp(c, 40000, err.Error())
+						return
+
+					}
+					if err = data.DeleteOne(tx, UserScreen.Screen); err != nil {
+						utils.ErrorResp(c, 40000, err.Error())
+						return
+					}
+					break
+				}
+			}
+		}
+	}
+	utils.SetTrue(succ)
+	utils.SuccessResp(c, "", nil)
 }
 
 func PatchScreen(c *gin.Context) {
@@ -67,7 +107,7 @@ func PatchScreen(c *gin.Context) {
 	oneToAdd := data.Screen{}
 	oneToAdd.ID = one.Id
 	content, _ := json.Marshal(one.Content)
-	result := data.UpdateOne(&oneToAdd, map[string]interface{}{"content": content})
+	result := data.UpdateOne(data.GetDataDB("default"), &oneToAdd, map[string]interface{}{"content": content})
 	utils.SuccessResp(c, "", result)
 }
 

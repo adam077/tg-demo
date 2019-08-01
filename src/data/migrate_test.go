@@ -14,5 +14,4 @@ func t1() {
 	db.AutoMigrate(&Screen{})
 	db.AutoMigrate(&Component{})
 	db.AutoMigrate(&UserScreen{})
-	db.AutoMigrate(&UserWidget{})
 }

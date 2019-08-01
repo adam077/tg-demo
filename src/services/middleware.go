@@ -38,7 +38,7 @@ func CheckAuth(c *gin.Context) {
 	token := c.GetHeader("Token")
 	userId, ok := single_cache.Get(token)
 	if !ok {
-		utils.ErrorResp(c, 40000, "")
+		utils.ErrorResp(c, 40000, "请登陆")
 		return
 	}
 	single_cache.Set(token, userId, 24*60*60)
