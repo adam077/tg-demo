@@ -34,6 +34,9 @@ func registerRouters(engine *gin.Engine) {
 	engine.Static("/assets", "./src/assets")
 	engine.StaticFS("/assets_list", http.Dir("src/assets"))
 
+	apiGroupLv0 := engine.Group("/migrate")
+	apiGroupLv0.Handle(http.MethodPost, "", test.Migrate)
+
 	apiGroupLv1 := engine.Group("/auth")
 	includeRoutes(apiGroupLv1, test.AuthRoutes)
 
