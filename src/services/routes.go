@@ -3,6 +3,7 @@ package services
 import (
 	"net/http"
 	"tg-demo/src/services/test"
+	"tg-demo/src/utils"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,10 @@ func SetupEngine() *gin.Engine {
 func registerRouters(engine *gin.Engine) {
 	engine.Static("/assets", "./src/assets")
 	engine.StaticFS("/assets_list", http.Dir("src/assets"))
+
+	engine.Handle(http.MethodGet, "hi", func(context *gin.Context) {
+		utils.SuccessResp(context, "hi", nil)
+	})
 
 	apiGroupLv0 := engine.Group("/migrate")
 	apiGroupLv0.Handle(http.MethodPost, "", test.Migrate)
